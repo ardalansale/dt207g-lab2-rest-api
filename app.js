@@ -26,15 +26,14 @@ app.get("/", (req, res) => {
   });
 });
 
-// GET
+// GET - Hämta alla poster
 app.get("/api/workexperience", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM dt207g_lab2_workexperience"
+      "SELECT * FROM dt207g_lab2_workexperience ORDER BY id ASC"
     );
 
     res.json(result.rows);
-
   } catch (error) {
     console.error(error);
 
@@ -44,7 +43,7 @@ app.get("/api/workexperience", async (req, res) => {
   }
 });
 
-// POST
+// POST - Skapa ny post
 app.post("/api/workexperience", async (req, res) => {
   try {
     const {
@@ -84,7 +83,6 @@ app.post("/api/workexperience", async (req, res) => {
     );
 
     res.status(201).json(result.rows[0]);
-
   } catch (error) {
     console.error(error);
 
@@ -94,6 +92,98 @@ app.post("/api/workexperience", async (req, res) => {
   }
 });
 
+// PUT - Uppdatera post
+app.put("/api/workexperience/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      companyname,
+      jobtitle,
+      location,
+      startdate,
+      enddate,
+      description
+    } = req.body;
+
+    if (
+      !companyname ||
+      !jobtitle ||
+      !location ||
+      !startdate ||
+      !description
+    ) {
+      return res.status(400).json({
+        error: "Alla obligatoriska fält måste vara ifyllda."
+      });
+    }
+
+    const result = await pool.query(
+      `UPDATE dt207g_lab2_workexperience
+       SET companyname = $1,
+           jobtitle = $2,
+           location = $3,
+           startdate = $4,
+           enddate = $5,
+           description = $6
+       WHERE id = $7
+       RETURNING *`,
+      [
+        companyname,
+        jobtitle,
+        location,
+        startdate,
+        enddate || null,
+        description,
+        id
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Posten hittades inte."
+      });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Något gick fel."
+    });
+  }
+});
+
+// DELETE - Radera post
+app.delete("/api/workexperience/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      "DELETE FROM dt207g_lab2_workexperience WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Posten hittades inte."
+      });
+    }
+
+    res.json({
+      message: "Post borttagen."
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      error: "Något gick fel."
+    });
+  }
+});
+
+// Starta servern
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
