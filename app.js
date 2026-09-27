@@ -30,7 +30,7 @@ app.get("/", (req, res) => {
 app.get("/api/workexperience", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM dt207g_lab2_workexperience ORDER BY id ASC"
+      "SELECT * FROM workexperience ORDER BY id ASC"
     );
 
     res.json(result.rows);
@@ -68,7 +68,7 @@ app.post("/api/workexperience", async (req, res) => {
     }
 
     const result = await pool.query(
-      `INSERT INTO dt207g_lab2_workexperience
+      `INSERT INTO workexperience
       (companyname, jobtitle, location, startdate, enddate, description)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *`,
@@ -119,7 +119,7 @@ app.put("/api/workexperience/:id", async (req, res) => {
     }
 
     const result = await pool.query(
-      `UPDATE dt207g_lab2_workexperience
+      `UPDATE workexperience
        SET companyname = $1,
            jobtitle = $2,
            location = $3,
@@ -161,7 +161,7 @@ app.delete("/api/workexperience/:id", async (req, res) => {
     const { id } = req.params;
 
     const result = await pool.query(
-      "DELETE FROM dt207g_lab2_workexperience WHERE id = $1 RETURNING *",
+      "DELETE FROM workexperience WHERE id = $1 RETURNING *",
       [id]
     );
 
@@ -187,5 +187,5 @@ app.delete("/api/workexperience/:id", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
